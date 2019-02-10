@@ -41,7 +41,7 @@ if ( WIN32 AND NOT CYGWIN )
   # Windows systems
   option ( LUA_USE_WINDOWS "Windows specific build." ON )
   option ( LUA_BUILD_WLUA "Build wLua interpretter without console output." ON )
-  option ( LUA_BUILD_AS_DLL "Build Lua library as Dll." ${BUILD_SHARED_LIBS} )
+  option ( LUA_BUILD_SHARED "Build Lua library as Dll." ${BUILD_SHARED_LIBS} )
 
   # Paths (Double escapes needed)
   set ( LUA_DIRSEP "\\\\" )
@@ -110,13 +110,18 @@ else ( )
 endif ( )
 
 ## BUILD
-# Create lua library
-add_library ( liblua ${SRC_CORE} ${SRC_LIB} ${LUA_DLL_RC} )
+# Create dynamic library
+if (LUA_BUILD_SHARED)
+  add_library ( liblua SHARED ${SRC_LIB} ${LUA_DLL_RC} ${LUA_DEF} )
+else()
+  add_library ( liblua STATIC ${SRC_LIB} ${LUA_DLL_RC} ${LUA_DEF} )
+endif()
+
 target_link_libraries ( liblua ${LIBS} )
 set_target_properties ( liblua PROPERTIES OUTPUT_NAME lua CLEAN_DIRECT_OUTPUT 1 )
-if ( LUA_BUILD_AS_DLL )
-  set_target_properties ( liblua PROPERTIES COMPILE_DEFINITIONS LUA_BUILD_AS_DLL )
-endif ()
+if ( LUA_BUILD_SHARED )
+  set_target_properties ( liblua PROPERTIES COMPILE_DEFINITIONS LUA_BUILD_SHARED )
+endif ( )
 
 add_executable ( lua ${SRC_LUA} src/lua.rc )
 target_link_libraries ( lua liblua )

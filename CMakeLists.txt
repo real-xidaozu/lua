@@ -44,7 +44,7 @@ if ( WIN32 AND NOT CYGWIN )
   # Windows systems
   option ( LUA_WIN "Windows specific build." ON )
   option ( LUA_BUILD_WLUA "Build wLua interpretter without console output." ON )
-  option ( LUA_BUILD_AS_DLL "Build Lua library as Dll." ${BUILD_SHARED_LIBS} )
+  option ( LUA_BUILD_SHARED "Build Lua library as Dll." ${BUILD_SHARED_LIBS} )
 
   # Paths (Double escapes needed)
   set ( LUA_DIRSEP "\\\\" ) 
@@ -137,11 +137,16 @@ endif ( )
 
 ## BUILD
 # Create dynamic library
-add_library ( liblua SHARED ${SRC_LIB} ${LUA_DLL_RC} ${LUA_DEF} )
+if (LUA_BUILD_SHARED)
+  add_library ( liblua SHARED ${SRC_LIB} ${LUA_DLL_RC} ${LUA_DEF} )
+else()
+  add_library ( liblua STATIC ${SRC_LIB} ${LUA_DLL_RC} ${LUA_DEF} )
+endif()
+
 target_link_libraries ( liblua ${LIBS} )
 set_target_properties ( liblua PROPERTIES OUTPUT_NAME lua CLEAN_DIRECT_OUTPUT 1 )
-if ( LUA_BUILD_AS_DLL )
-  set_target_properties ( liblua PROPERTIES COMPILE_DEFINITIONS LUA_BUILD_AS_DLL )
+if ( LUA_BUILD_SHARED )
+  set_target_properties ( liblua PROPERTIES COMPILE_DEFINITIONS LUA_BUILD_SHARED )
 endif ( )
 
 # Create static library, this is needed to compile luac in the 5.1.x Lua series
@@ -198,3 +203,4 @@ add_lua_test ( test/sort.lua )
 add_lua_test ( test/trace-calls.lua )
 add_lua_test ( test/trace-globals.lua )
 #add_lua_test ( test/xd.lua ) # Requires input
+
